@@ -13,13 +13,20 @@
 // Outside the grader's container, MAKEFUN_OUTPUT_DIR stands in for /output:
 //   mkdir -p out && MAKEFUN_OUTPUT_DIR=out node main.ts
 
-import { cpSync, existsSync, mkdirSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, readdirSync, statSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { buildDossier } from './vendor/makefun-frontend.ts';
 
 const here = fileURLToPath(new URL('.', import.meta.url));
 const out = process.env.MAKEFUN_OUTPUT_DIR ?? '/output';
+
+// Refuse a hollow hand-in: the app and all three screenshots must sit beside
+// this file before anything is copied, so a broken checkout fails loudly
+// here instead of handing in an entry with a missing cover.
+for (const needed of ['app/index.html', 'screenshots/1-board.jpg', 'screenshots/2-bounty.jpg', 'screenshots/3-leaderboard.jpg']) {
+  if (!existsSync(join(here, needed))) throw new Error(`potwatch: missing ${needed} beside main.ts; nothing was handed in`);
+}
 
 mkdirSync(out, { recursive: true });
 cpSync(join(here, 'app'), join(out, 'app'), { recursive: true });
@@ -32,5 +39,16 @@ if (existsSync(join(here, 'screenshots'))) cpSync(join(here, 'screenshots'), joi
 const dossier = buildDossier(out, { text_max_bytes: 163840, screenshots: { max: 3, max_bytes: 262144 }, app_max_files: 993, app_max_bytes: 16777216 });
 writeFileSync(join(out, 'dossier.json'), dossier);
 
-// A one-line receipt for whoever runs this by hand: what was handed in.
-console.log(`potwatch: app/ and screenshots/ copied to ${out}; dossier.json is ${Buffer.byteLength(dossier)} bytes`);
+// A receipt for whoever runs this by hand: every handed-in file with its
+// size, so the entry's footprint is visible at a glance.
+const handedIn = [];
+const walk = (dir, prefix) => {
+  for (const name of readdirSync(dir).sort()) {
+    const path = join(dir, name);
+    if (statSync(path).isDirectory()) walk(path, `${prefix}${name}/`);
+    else handedIn.push(`  ${prefix}${name}  ${statSync(path).size} bytes`);
+  }
+};
+walk(join(out, 'app'), 'app/');
+walk(join(out, 'screenshots'), 'screenshots/');
+console.log(`potwatch: handed in to ${out}\n${handedIn.join('\n')}\n  dossier.json  ${Buffer.byteLength(dossier)} bytes`);

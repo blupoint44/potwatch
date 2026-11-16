@@ -5,12 +5,11 @@
 //   #/bounty/<slug>/leaderboard     that bounty's standings
 //   #/u/<handle>                    an account's public profile
 //
-// Only the board's code is in the first load; the other three surfaces are
-// imported when their route is opened, so the board arrives in a handful of
-// kilobytes. window.__shotReady is false while a route loads and true once
-// its data is on screen (the error page counts as rendered), so screenshot
-// tooling knows when to capture. Countdowns tick by updating only the
-// elements that show them, never by re-rendering a page.
+// Only the board's code and styles are in the first load; the other three
+// surfaces arrive when their route opens — modules by import(), their
+// stylesheet (routes.css) by a <link> added once. window.__shotReady is
+// false while a route loads, true once its data is on screen (the error
+// page counts as rendered). Countdowns tick in place, never re-rendering.
 
 import { fetchBoard, fetchBounty, fetchLeaderboard, fetchProfile } from './api.js';
 import { timeLeft } from './format.js';
@@ -22,6 +21,19 @@ const boardFilters = { query: '', category: 'all', sort: 'ending' };
 let boardItems = null; // last board payload, reused by the filter toolbar
 let standings = null; // last leaderboard payload, reused by "show all"
 let navigation = 0; // token so a slow route never overwrites a newer one
+let routeStyles = null; // routes.css load, shared by every non-board route
+
+/** Add the route stylesheet once; resolves when it is in force (or failed). */
+function ensureRouteStyles() {
+  if (!routeStyles) {
+    routeStyles = new Promise((resolve) => {
+      const link = Object.assign(document.createElement('link'), { rel: 'stylesheet', href: 'routes.css' });
+      link.onload = link.onerror = resolve;
+      document.head.append(link);
+    });
+  }
+  return routeStyles;
+}
 
 /** Split the current hash into route segments. */
 function route() {
@@ -35,28 +47,28 @@ async function render() {
   const [head, arg, tail] = route();
   try {
     if (head === 'bounty' && arg && tail === 'leaderboard') {
-      app.innerHTML = loadingView('Loading the standings&hellip;');
+      app.innerHTML = loadingView('Loading the standings…');
       const [{ leaderboardView }, b, lb] = await Promise.all([
-        import('./standings.js'), fetchBounty(arg), fetchLeaderboard(arg),
+        import('./standings.js'), fetchBounty(arg), fetchLeaderboard(arg), ensureRouteStyles(),
       ]);
       if (ticket !== navigation) return;
       standings = { bounty: b, board: lb, view: leaderboardView };
       document.title = `Leaderboard · ${b.title} · Potwatch`;
       app.innerHTML = leaderboardView(b, lb);
     } else if (head === 'bounty' && arg) {
-      app.innerHTML = loadingView('Loading the bounty&hellip;');
-      const [{ bountyView }, b] = await Promise.all([import('./bounty.js'), fetchBounty(arg)]);
+      app.innerHTML = loadingView('Loading the bounty…');
+      const [{ bountyView }, b] = await Promise.all([import('./bounty.js'), fetchBounty(arg), ensureRouteStyles()]);
       if (ticket !== navigation) return;
       document.title = `${b.title} · Potwatch`;
       app.innerHTML = bountyView(b);
     } else if (head === 'u' && arg) {
-      app.innerHTML = loadingView('Loading the profile&hellip;');
-      const [{ profileView }, p] = await Promise.all([import('./profile.js'), fetchProfile(arg)]);
+      app.innerHTML = loadingView('Loading the profile…');
+      const [{ profileView }, p] = await Promise.all([import('./profile.js'), fetchProfile(arg), ensureRouteStyles()]);
       if (ticket !== navigation) return;
       document.title = `@${p.handle} · Potwatch`;
       app.innerHTML = profileView(p);
     } else {
-      app.innerHTML = loadingView('Loading live bounties&hellip;');
+      app.innerHTML = loadingView('Loading live bounties…');
       const data = await fetchBoard();
       if (ticket !== navigation) return;
       boardItems = data.items || [];

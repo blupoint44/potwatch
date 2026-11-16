@@ -2,7 +2,8 @@
 // the description and rules (Markdown, rendered by md.js), and latest entries.
 
 import { markdown } from './md.js';
-import { ago, dateTime, esc, feeOf, money, placeLabel, potOf, timeLeft } from './format.js';
+import { ago, dateTime, placeLabel } from './extras.js';
+import { esc, feeOf, money, potOf, timeLeft } from './format.js';
 import { statusChip } from './views.js';
 
 /** The rewards table: what each place pays now, fee share included. */
@@ -33,8 +34,7 @@ export function bountyView(b) {
   <p class="crumbs"><a href="#/">&larr; All bounties</a></p>
   <section class="bounty-head">
     <div class="card-top">
-      <span class="chip">${esc(b.category || 'Bounty')}</span>
-      ${statusChip(b)}
+      <span class="chip-row"><span class="chip">${esc(b.category || 'Bounty')}</span>${statusChip(b)}</span>
       ${b.sponsor?.name ? `<span class="sponsor">by ${esc(b.sponsor.name)}</span>` : ''}
     </div>
     <h1>${esc(b.title)}</h1>
@@ -63,7 +63,7 @@ export function bountyView(b) {
     <li>
       <span class="entry-title">${esc(s.title || 'Untitled entry')}</span>
       <span class="entry-meta">by <a href="#/u/${encodeURIComponent(s.hunter)}">${esc(s.hunter)}</a>
-      &middot; ${ago(s.createdAt)} &middot; ${esc(s.status || '')}</span>
+      &middot; ${ago(s.createdAt)} &middot; <span class="chip">${esc(s.status || '')}</span></span>
     </li>`).join('')}
   </ul>` : ''}`;
 }

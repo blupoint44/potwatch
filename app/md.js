@@ -5,13 +5,15 @@
 
 import { esc } from './format.js';
 
-/** Inline Markdown on already-escaped text: code, bold, italic, links. */
+/** Inline Markdown on already-escaped text: code, bold, strike, italic, links, bare URLs. */
 function inline(text) {
   return text
     .replace(/`([^`]+)`/g, '<code>$1</code>')
     .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+    .replace(/~~([^~]+)~~/g, '<del>$1</del>')
     .replace(/(^|[^*])\*([^*\n]+)\*/g, '$1<em>$2</em>')
-    .replace(/\[([^\]]+)\]\((https?:[^)\s]+)\)/g, '<a href="$2" rel="noopener">$1</a>');
+    .replace(/\[([^\]]+)\]\((https?:[^)\s]+)\)/g, '<a href="$2" rel="noopener">$1</a>')
+    .replace(/(?<![=">])\b(https?:\/\/[^\s<]+)/g, '<a href="$1" rel="noopener">$1</a>');
 }
 
 /** Render one pipe table from its raw lines (header, separator, body rows). */
@@ -24,8 +26,9 @@ function table(lines) {
 
 /**
  * Render the Markdown subset bounty texts use: headings, paragraphs, lists,
- * quotes, rules, fenced code and pipe tables. Input is treated as plain text
- * and escaped before any tag is emitted, so API text can never inject HTML.
+ * quotes, rules, fenced code, pipe tables, strikethrough and bare-URL
+ * autolinks. Input is treated as plain text and escaped before any tag is
+ * emitted, so API text can never inject HTML.
  */
 export function markdown(source) {
   const lines = String(source ?? '').replace(/\r\n?/g, '\n').split('\n');

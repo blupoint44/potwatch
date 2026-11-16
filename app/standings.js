@@ -2,19 +2,21 @@
 // paged at 60 rows with a show-all button so a big field never dumps
 // hundreds of rows into the page at once.
 
-import { dateTime, esc, sizeLabel, winRange, winRate } from './format.js';
-import { avatarImg } from './views.js';
+import { avatarImg, dateTime, sizeLabel, winRange, winRate } from './extras.js';
+import { esc } from './format.js';
 
-/** One leaderboard row: rank, entrant, entry, win rate and interval. */
+/** One leaderboard row: rank, entrant, entry, win rate (with bar) and interval. */
 export function leaderboardRow(e) {
   const v = e.values || {};
   const range = winRange(v.judge_low, v.judge_high);
+  const pct = Number.isFinite(Number(v.judge)) ? (Number(v.judge) / 10000).toFixed(1) : 0;
+  const cls = [e.house || e.baseline ? 'row-house' : '', e.rank <= 3 ? 'row-top' : ''].filter(Boolean).join(' ');
   return `
-  <tr${e.house || e.baseline ? ' class="row-house"' : ''}>
+  <tr${cls ? ` class="${cls}"` : ''}>
     <td class="rank">${e.rank}</td>
     <td><span class="entrant">${avatarImg(e.image)}<a href="#/u/${encodeURIComponent(e.handle)}">${esc(e.handle)}</a>${e.house || e.baseline ? ' <span class="chip">house</span>' : ''}</span></td>
     <td class="entry-name">${esc(e.title || '')}</td>
-    <td class="num strong">${winRate(v.judge)}</td>
+    <td class="num"><span class="bar" aria-hidden="true"><i style="width:${pct}%"></i></span><span class="strong">${winRate(v.judge)}</span></td>
     <td class="num dim">${range}</td>
     <td>${v.valid ? '&#10003;' : '&mdash;'}</td>
     <td class="num dim">${sizeLabel(v.bytes)}</td>

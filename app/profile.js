@@ -1,8 +1,8 @@
 // An account's public profile: identity and socials, its competitive
 // record at a glance, and every entry it has made with scores and prizes.
 
-import { ago, dateTime, esc, money, placeLabel, winRate } from './format.js';
-import { avatarImg } from './views.js';
+import { ago, avatarImg, dateTime, placeLabel, winRate } from './extras.js';
+import { esc, money } from './format.js';
 
 /** An account's public profile: identity, record, and everything it entered. */
 export function profileView(p) {
@@ -41,7 +41,7 @@ export function profileView(p) {
     <thead><tr><th>Entry</th><th>Bounty</th><th class="num">Score</th><th>Place</th><th class="num">Prize</th><th>Entered</th></tr></thead>
     <tbody>
     ${solutions.map((s) => `
-      <tr>
+      <tr${s.placement && s.placement <= 3 ? ' class="row-podium"' : ''}>
         <td class="entry-name">${esc(s.title || 'Untitled entry')}</td>
         <td><a href="#/bounty/${encodeURIComponent(s.competition.slug)}">${esc(s.competition.title)}</a></td>
         <td class="num">${s.score ? `${esc(s.score.column?.title || 'Score')} ${s.score.column?.key === 'judge' ? winRate(s.score.value) : esc(s.score.display ?? s.score.value)}` : '&mdash;'}</td>

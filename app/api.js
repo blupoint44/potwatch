@@ -1,7 +1,6 @@
-// Data layer over make.fun's public API: read-only GET requests, open to any
-// origin. Answers carry ETags bound to the minute, so repeat reads revalidate
-// with If-None-Match: a 304 costs a header round-trip and reuses the parsed
-// body already in memory, and identical in-flight reads share one request.
+// Data layer over make.fun's public API: read-only GETs, open to any origin.
+// Answers carry minute-bound ETags, so repeat reads revalidate with
+// If-None-Match (a 304 reuses the parsed body), and in-flight reads dedupe.
 
 const API_BASE = 'https://make.fun/api';
 export const SITE_BASE = 'https://make.fun';

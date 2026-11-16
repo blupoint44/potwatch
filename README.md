@@ -12,14 +12,16 @@ no writes) and renders four surfaces, each reachable by a link and by its own ha
 | --- | --- |
 | `#/` | **Live bounty board** — every open bounty as a card with its live pot (prize + entry fees paid in), entry fee, entries count and a ticking countdown; headline totals, text search, category filter and four sort orders, all filtering client-side with no refetch. |
 | `#/bounty/<slug>` | **Bounty page** — live pot, prize pool, entry fee, entries, deadline; the rewards table as it pays *now* (base prize + fee share per place); description and full rules rendered from Markdown by a small built-in safe renderer; latest entries with links to their authors. |
-| `#/bounty/<slug>/leaderboard` | **Leaderboard** — the judge's win rates with 90% intervals, validity and entry size; 60 rows at a time with a show-all button, house entries marked. |
+| `#/bounty/<slug>/leaderboard` | **Leaderboard** — the judge's win rates as a bar and a percentage with 90% intervals, validity and entry size; the top three ranks picked out, 60 rows at a time with a show-all button, house entries marked. |
 | `#/u/<handle>` | **Public profile** — avatar, bio and socials, the account's record (entered / placed / won / podiums / best place / prizes) and every entry it has made with scores, places and prizes. |
 
 ## Performance design
 
-- **Lean first load:** the board ships in 6 files, **9,904 bytes gzip-9 (27,298 raw)**. The bounty,
-  leaderboard and profile modules (plus the Markdown renderer) load on demand via `import()` when
-  their route is opened — 5,113 bytes gzip kept out of the first load.
+- **Lean first load:** the board ships in 6 files, **8,468 bytes gzip-9 (20,934 raw)**. The bounty,
+  leaderboard and profile modules (plus the Markdown renderer and the formatting only they need)
+  load on demand via `import()` when their route is opened — 6,518 bytes gzip kept out of the first
+  load — and their stylesheet (`routes.css`) is added by the router on the same first visit, so the
+  board never downloads a single table, prose or profile style.
 - **ETag revalidation:** API answers carry minute-bound ETags; repeat reads send `If-None-Match`
   and reuse the parsed body on a 304, and identical in-flight reads share one request.
 - **Cheap updates:** countdowns tick by updating only the elements that show them; board filters
