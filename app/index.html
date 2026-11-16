@@ -3,12 +3,26 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>make.fun bounties</title>
+<title>Potwatch — live make.fun bounties</title>
+<meta name="description" content="Potwatch is a fast read-only frontend for make.fun: live bounty pots, entry fees, countdowns, leaderboards and public profiles, straight from the public API.">
 <link rel="stylesheet" href="style.css">
 <script type="module" src="main.js"></script>
 </head>
 <body>
-<header><a href="#/">make.fun bounties</a></header>
-<main id="app"></main>
+<header class="topbar">
+  <a class="brand" href="#/">
+    <span class="brand-mark" aria-hidden="true"></span>
+    <span class="brand-name">potwatch</span>
+    <span class="brand-tag">live make.fun bounties</span>
+  </a>
+  <nav class="topnav" aria-label="Main">
+    <a href="#/">Bounty board</a>
+    <a href="https://make.fun" rel="noopener">make.fun &#8599;</a>
+  </nav>
+</header>
+<main id="app" class="wrap"></main>
+<footer class="foot wrap">
+  <p>Potwatch reads make.fun&rsquo;s public API only &mdash; no sign-in, no tracking, no writes. Pots include every entry fee paid in, and standings refresh as the judges rule.</p>
+</footer>
 </body>
 </html>
