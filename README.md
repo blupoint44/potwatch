@@ -17,7 +17,7 @@ no writes) and renders four surfaces, each reachable by a link and by its own ha
 
 ## Performance design
 
-- **Lean first load:** the board ships in 6 files, **8,468 bytes gzip-9 (20,934 raw)**. The bounty,
+- **Lean first load:** the board ships in 6 files, **8,468 bytes gzip-9 (20,914 raw)**. The bounty,
   leaderboard and profile modules (plus the Markdown renderer and the formatting only they need)
   load on demand via `import()` when their route is opened — 6,518 bytes gzip kept out of the first
   load — and their stylesheet (`routes.css`) is added by the router on the same first visit, so the
